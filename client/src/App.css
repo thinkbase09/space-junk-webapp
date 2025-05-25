@@ -1,0 +1,23 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.App-header {
+  background-color: #20232a;
+  color: white;
+  padding: 0.5rem 1rem;   /* ⬅️ 여백 줄임 */
+  font-size: 1.1rem;       /* ⬅️ 텍스트 크기도 살짝 줄임 */
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.Viewer-container {
+  flex-grow: 1;
+  position: relative;
+  z-index: 1;
+  min-height: 0; /* ⬅️ 반드시 필요! */
+}

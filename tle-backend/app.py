@@ -67,6 +67,3 @@ def get_debris():
 if __name__ == '__main__':
     app.run(debug=True)
 
-print("📥 요청한 그룹:", group)
-print("📁 임시 TLE 파일 경로:", tle_file_path)
-print("✅ 위성 개수:", len(sats))

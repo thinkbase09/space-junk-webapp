@@ -43,8 +43,10 @@ function CesiumViewer({ tleGroup }) {
 
     console.log("📡 현재 요청한 TLE 그룹:", tleGroup);
     viewer.entities.removeAll();
+    const url = `${process.env.REACT_APP_API_BASE_URL}/api/debris?group=${tleGroup}`;
 
-    fetch(`http://localhost:5000/api/debris?group=${tleGroup}`)
+
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
         const added = new Set();

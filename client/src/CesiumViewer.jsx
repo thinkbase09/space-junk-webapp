@@ -10,7 +10,7 @@ import {
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
 // 정적 리소스 경로 설정
-window.CESIUM_BASE_URL = "/cesium";
+window.CESIUM_BASE_URL = "/Cesium";
 
 // Ion 토큰 설정
 Ion.defaultAccessToken =

@@ -8,7 +8,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>🛰️ Space Junk Viewer</h1>
+        <h1>🛰️ OrbNet</h1>
         <select onChange={(e) => setTleGroup(e.target.value)}>
           <option value="cosmos-1408-debris">Cosmos 1408</option>
           <option value="cosmos-2251-debris">Cosmos 2251</option>

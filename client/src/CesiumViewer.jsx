@@ -5,7 +5,9 @@ import {
   Cartesian3,
   Color,
   LabelStyle,
-  VerticalOrigin
+  VerticalOrigin,
+  ScreenSpaceEventHandler,
+  ScreenSpaceEventType
 } from "cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
@@ -24,7 +26,7 @@ function CesiumViewer({ tleGroup }) {
   useEffect(() => {
     if (!viewerRef.current || viewerRefInstance.current) return;
 
-    viewerRefInstance.current = new Viewer(viewerRef.current, {
+    const viewer = new Viewer(viewerRef.current, {
       shouldAnimate: true,
       timeline: true,
       animation: true,
@@ -33,6 +35,41 @@ function CesiumViewer({ tleGroup }) {
       infoBox: true,
       sceneModePicker: true,
     });
+
+    viewerRefInstance.current = viewer;
+
+    // ✅ 클릭 이벤트 핸들러 추가
+    const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
+    handler.setInputAction(async (click) => {
+      const picked = viewer.scene.pick(click.position);
+      if (picked && picked.id && picked.id.position) {
+        const entity = picked.id;
+
+        // 현재 고도 계산
+        const cartesian = entity.position.getValue(viewer.clock.currentTime);
+        const altitude = cartesian.z / 1000; // m → km
+        const risk = "중간"; // 일단 고정
+
+        try {
+          const res = await fetch(
+            `http://localhost:5000/api/recommend?altitude=${altitude}&risk=${risk}`
+          );
+          const data = await res.json();
+
+          entity.description = `
+            <h3>${entity.name}</h3>
+            <p><strong>고도:</strong> ${altitude.toFixed(1)} km</p>
+            <p><strong>추천 기술:</strong> ${data.recommended}</p>
+            <p><strong>성공률:</strong> ${data.success_rate}%</p>
+            <ul>
+              ${data.reasons.map((r) => `<li>${r}</li>`).join("")}
+            </ul>
+          `;
+        } catch (err) {
+          console.error("❌ 추천 API 실패:", err);
+        }
+      }
+    }, ScreenSpaceEventType.LEFT_CLICK);
   }, []);
 
   // 2. tleGroup이 바뀔 때마다 fetch 요청 & 엔티티 렌더링
@@ -44,7 +81,6 @@ function CesiumViewer({ tleGroup }) {
     console.log("📡 현재 요청한 TLE 그룹:", tleGroup);
     viewer.entities.removeAll();
     const url = `${process.env.REACT_APP_API_BASE_URL}/api/debris?group=${tleGroup}`;
-
 
     fetch(url)
       .then((res) => res.json())

@@ -14,7 +14,7 @@ function App() {
       <header className="App-header">
         <div style={{ display: "flex", alignItems: "center" }}>
           <img
-            src="/perigee-favicon.png"
+            src="/logo-perigee.png"
             alt="Perigee logo"
             onClick={handleLogoClick}
             style={{

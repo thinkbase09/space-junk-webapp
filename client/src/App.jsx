@@ -12,20 +12,19 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div className="logo-wrapper" onClick={handleLogoClick}>
           <img
             src="/logo-perigee.png"
             alt="Perigee logo"
-            onClick={handleLogoClick}
-            style={{
-              width: "36px",
-              height: "36px",
-              cursor: "pointer",
-              marginRight: "12px"
-            }}
+            className="logo-image"
           />
+          <span className="logo-text">Perigee</span>
         </div>
-        <select onChange={(e) => setTleGroup(e.target.value)}>
+        <select
+          className="tle-select"
+          value={tleGroup}
+          onChange={(e) => setTleGroup(e.target.value)}
+        >
           <option value="cosmos-1408-debris">Cosmos 1408</option>
           <option value="cosmos-2251-debris">Cosmos 2251</option>
           <option value="fengyun-1c-debris">Fengyun 1C</option>

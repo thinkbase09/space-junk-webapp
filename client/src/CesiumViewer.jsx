@@ -36,6 +36,8 @@ function CesiumViewer({ tleGroup }) {
       sceneModePicker: true,
     });
 
+    viewer.scene.globe.enableLighting = false; // ← 조명 비활성화 (전체 밝게)
+
     viewerRefInstance.current = viewer;
 
     // ✅ 클릭 이벤트 핸들러 추가

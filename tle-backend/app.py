@@ -13,10 +13,15 @@ def get_debris():
     url = f"https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=tle"
 
     try:
-        tle_data = urllib.request.urlopen(url).read().decode("utf-8")
+        print(f"🌐 [FETCH] URL: {url}")
+        tle_data = urllib.request.urlopen(url, timeout=5).read().decode("utf-8")
         lines = tle_data.strip().splitlines()
-        parsed_lines = []
+        print(f"📄 TLE lines: {len(lines)}")
 
+        if len(lines) < 3:
+            raise ValueError("TLE 데이터가 비정상입니다 (라인 수 부족).")
+
+        parsed_lines = []
         for i in range(0, len(lines), 3):
             try:
                 line1 = lines[i+1]
@@ -28,6 +33,9 @@ def get_debris():
                 parsed_lines.append(line2)
             except IndexError:
                 continue
+
+        if not parsed_lines:
+            raise ValueError("TLE 파싱 실패: 유효한 위성 없음.")
 
         with tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".tle") as f:
             f.write('\n'.join(parsed_lines))
@@ -41,24 +49,32 @@ def get_debris():
         result = []
 
         for sat in sats[:20]:
-            sat_id = sat.model.satnum
-            if sat_id in seen_ids:
-                continue
-            seen_ids.add(sat_id)
+            try:
+                sat_id = sat.model.satnum
+                if sat_id in seen_ids:
+                    continue
+                seen_ids.add(sat_id)
 
-            geo = sat.at(t)
-            subpoint = wgs84.subpoint(geo)
-            result.append({
-                'name': f"{group}-{sat_id}",
-                'lat': subpoint.latitude.degrees,
-                'lon': subpoint.longitude.degrees,
-                'alt': subpoint.elevation.km
-            })
+                geo = sat.at(t)
+                subpoint = wgs84.subpoint(geo)
+                result.append({
+                    'name': f"{group}-{sat_id}",
+                    'lat': subpoint.latitude.degrees,
+                    'lon': subpoint.longitude.degrees,
+                    'alt': subpoint.elevation.km
+                })
+            except Exception as e:
+                print(f"⚠️ 위성 계산 오류: {e}")
+                continue
 
         return jsonify(result)
 
     except Exception as e:
+        import traceback
+        print("❌ [ERROR] debris API 실패:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
 
 # ✅ 제거 기술 추천 로직
 def recommend_technology(altitude, risk_level):

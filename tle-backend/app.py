@@ -11,12 +11,12 @@ CORS(app)
 def get_debris():
     group = request.args.get('group', 'cosmos-1408-debris')
     url = f"https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=tle"
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})  # ✅ 핵심
-    tle_data = urllib.request.urlopen(req, timeout=5).read().decode("utf-8")
 
     try:
         print(f"🌐 [FETCH] URL: {url}")
-        tle_data = urllib.request.urlopen(url, timeout=5).read().decode("utf-8")
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        tle_data = urllib.request.urlopen(req, timeout=5).read().decode("utf-8")  # ✅ 이 줄만 있어야 함
+
         lines = tle_data.strip().splitlines()
         print(f"📄 TLE lines: {len(lines)}")
 
@@ -76,6 +76,7 @@ def get_debris():
         print("❌ [ERROR] debris API 실패:")
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
+
 
 
 # ✅ 제거 기술 추천 로직

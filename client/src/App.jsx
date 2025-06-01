@@ -18,7 +18,6 @@ function App() {
             alt="Perigee logo"
             className="logo-image"
           />
-          <span className="logo-text">Perigee</span>
         </div>
         <select
           className="tle-select"

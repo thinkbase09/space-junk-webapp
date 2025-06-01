@@ -9,6 +9,7 @@ CORS(app)
 
 @app.route('/api/debris')
 def get_debris():
+    group = request.args.get('group', 'cosmos-1408-debris')
     url = f"https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=tle"
     headers = {'User-Agent': 'Mozilla/5.0'}
     req = urllib.request.Request(url, headers=headers)

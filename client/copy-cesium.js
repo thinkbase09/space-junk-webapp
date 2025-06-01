@@ -1,13 +1,11 @@
-// client/copy-cesium.js
+const fs = require("fs-extra");
 const path = require("path");
-const fse = require("fs-extra");
 
-const source = path.join(__dirname, "public", "cesium");
-const destination = path.join(__dirname, "build", "cesium");
+const source = path.join("node_modules", "cesium", "Build", "Cesium");
+const target = path.join("public", "cesium");
 
-fse.copy(source, destination)
-  .then(() => console.log("✅ Cesium assets copied!"))
-  .catch((err) => {
-    console.error("❌ Cesium copy failed:", err);
-    process.exit(1);
-  });
+fs.ensureDirSync(target);              // 폴더 없으면 만들어줌
+fs.copySync(source, target);          // 복사
+
+console.log("✅ Cesium assets copied to public/cesium");
+

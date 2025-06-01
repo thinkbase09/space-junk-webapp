@@ -1,4 +1,5 @@
 import urllib.request
+import requests
 import tempfile
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -14,11 +15,16 @@ def get_debris():
 
     try:
         print(f"🌐 [FETCH] URL: {url}")
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        tle_data = urllib.request.urlopen(req, timeout=5).read().decode("utf-8")  # ✅ 이 줄만 있어야 함
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, headers=headers, timeout=5)
 
+        if response.status_code != 200:
+            raise Exception(f"HTTP {response.status_code} Error from CelesTrak")
+
+        tle_data = response.text
         lines = tle_data.strip().splitlines()
         print(f"📄 TLE lines: {len(lines)}")
+
 
         if len(lines) < 3:
             raise ValueError("TLE 데이터가 비정상입니다 (라인 수 부족).")

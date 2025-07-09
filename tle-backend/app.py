@@ -3,19 +3,59 @@ import tempfile
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from skyfield.api import load, wgs84
-
-
+import os
+import math
 
 app = Flask(__name__)
 CORS(app)
 
-import os
+# ✅ 거리 계산 함수 (위도, 경도, 고도 포함)
+def distance_between(sat1, sat2):
+    lat1 = math.radians(sat1['lat'])
+    lon1 = math.radians(sat1['lon'])
+    lat2 = math.radians(sat2['lat'])
+    lon2 = math.radians(sat2['lon'])
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Render가 제공하는 포트 사용
-    app.run(host="0.0.0.0", port=port)
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    earth_radius = 6371  # km
+    surface_distance = earth_radius * c
 
+    alt_diff = abs(sat1['alt'] - sat2['alt'])
+    distance = math.sqrt(surface_distance**2 + alt_diff**2)
 
+    return distance
+
+# ✅ 근접 위성 수 세기
+def count_nearby_satellites(satellites, target_sat, threshold_km=100):
+    count = 0
+    for sat in satellites:
+        if sat['name'] == target_sat['name']:
+            continue
+        dist = distance_between(target_sat, sat)
+        if dist <= threshold_km:
+            count += 1
+    return count
+
+# ✅ 위험도 평가 함수
+def assess_risk(altitude, nearby_count):
+    if altitude > 1000:
+        base_risk = '높음'
+    elif 700 <= altitude <= 1000:
+        base_risk = '중간'
+    else:
+        base_risk = '낮음'
+
+    if nearby_count >= 10:
+        return '높음'
+    elif nearby_count >= 5:
+        return '중간'
+    else:
+        return base_risk
+
+# ✅ 위성 정보 API (자동 위험도 포함)
 @app.route('/api/debris')
 def get_debris():
     group = request.args.get('group', 'cosmos-1408-debris')
@@ -64,74 +104,17 @@ def get_debris():
                 'alt': subpoint.elevation.km
             })
 
+        # ✅ 위험도 계산 추가
+        for sat in result:
+            nearby_count = count_nearby_satellites(result, sat, threshold_km=100)
+            sat['nearby_count'] = nearby_count
+            sat['risk'] = assess_risk(sat['alt'], nearby_count)
+
         return jsonify(result)
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ✅ 제거 기술 추천 로직
-def recommend_technology(altitude, risk_level):
-    technologies = {
-        '레이저': {'base_success': 0.8, 'score': 0},
-        '그물': {'base_success': 0.7, 'score': 0},
-        '자기장': {'base_success': 0.6, 'score': 0},
-        '로봇팔': {'base_success': 0.5, 'score': 0}
-    }
-
-    reasons = []
-
-    if altitude > 1000:
-        technologies['레이저']['score'] += 2
-        reasons.append("고도가 1000km 이상으로 높아, 원거리에서도 작동 가능한 '레이저' 기술이 적합합니다.")
-    elif 600 <= altitude <= 1000:
-        technologies['그물']['score'] += 2
-        reasons.append("고도가 중간 수준(600~1000km)으로, '그물' 기술이 효율적입니다.")
-    elif 700 <= altitude <= 900:
-        technologies['로봇팔']['score'] += 1
-        reasons.append("고도가 중간이며, 로봇팔이 접근 가능한 범위입니다.")
-    elif altitude < 600:
-        technologies['자기장']['score'] += 2
-        reasons.append("고도가 낮아 자기장 기반 기술로도 쓰레기 제거가 가능합니다.")
-
-    if risk_level == '높음':
-        technologies['레이저']['score'] += 2
-        reasons.append("위험도가 높기 때문에 즉각적이고 강력한 제거가 가능한 '레이저' 기술이 추천됩니다.")
-    elif risk_level == '중간':
-        technologies['그물']['score'] += 1
-        reasons.append("위험도가 중간이므로 안전하고 정확한 '그물' 기술이 적절합니다.")
-    elif risk_level == '낮음':
-        technologies['자기장']['score'] += 1
-        reasons.append("위험도가 낮기 때문에 비용이 적게 드는 '자기장' 기술로 충분합니다.")
-
-    recommended = max(technologies.items(), key=lambda x: x[1]['score'])
-    tech_name, tech_info = recommended
-
-    success_chance = tech_info['base_success']
-    if risk_level == '높음':
-        success_chance += 0.05
-    elif risk_level == '낮음':
-        success_chance -= 0.05
-
-    return tech_name, success_chance, reasons
-
-# ✅ 추천 API
-@app.route('/api/recommend', methods=['GET'])
-def recommend():
-    try:
-        altitude = float(request.args.get('altitude'))
-        risk = request.args.get('risk', '중간')
-
-        tech, chance, reasons = recommend_technology(altitude, risk)
-
-        return jsonify({
-            'recommended': tech,
-            'success_rate': round(chance * 100, 1),
-            'reasons': reasons
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

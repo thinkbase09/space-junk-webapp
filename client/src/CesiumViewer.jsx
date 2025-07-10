@@ -53,6 +53,9 @@ function CesiumViewer({ tleGroup }) {
         const altitude = cartographic.height / 1000;
         const velocity = entity.properties.velocity.getValue(viewer.clock.currentTime);
 
+        console.log("🛰️ altitude:", altitude);
+        console.log("🛰️ velocity:", velocity);
+
         try {
           const res = await fetch(
             `https://thinkbasebackend.onrender.com/api/recommend?altitude=${altitude}&velocity=${velocity}`

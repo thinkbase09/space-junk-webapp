@@ -41,7 +41,7 @@ def get_debris():
         for sat in sats[:20]:  # 위성 20개까지만 제한
             geo = sat.at(t)
             subpoint = wgs84.subpoint(geo)
-            velocity = sat.velocity.km_per_s  # ✅ 위성 속도 계산 추가
+            velocity = sat.model.mean_motion * (2 * 3.141592653589793) * 6371 / 86400
             result.append({
                 'name': f"{group}-{sat.model.satnum}",
                 'lat': subpoint.latitude.degrees,

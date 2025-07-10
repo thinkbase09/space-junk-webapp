@@ -55,7 +55,7 @@ function CesiumViewer({ tleGroup }) {
 
         try {
           const res = await fetch(
-            `https://thinkbasebackend.onrender.com/api/recommend?altitude=${altitude}&risk=${risk}&velocity=${velocity}`
+            `https://thinkbasebackend.onrender.com/api/recommend?altitude=${altitude}&velocity=${velocity}`
           );
           const data = await res.json();
 

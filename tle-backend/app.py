@@ -4,6 +4,7 @@ from skyfield.api import load, wgs84
 import urllib.request
 import tempfile
 import os
+import numpy as np
 
 app = Flask(__name__)
 CORS(app)
@@ -49,7 +50,8 @@ def get_debris():
 
             geo = sat.at(t)
             subpoint = wgs84.subpoint(geo)
-            velocity = geo.velocity.km_per_s.magnitude()
+            velocity_vector = geo.velocity.km_per_s
+            velocity = np.linalg.norm(velocity_vector)
             result.append({
                 'name': f"{group}-{sat_id}",
                 'lat': subpoint.latitude.degrees,

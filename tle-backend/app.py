@@ -16,7 +16,7 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
 
 
-@app.route('/api/debris')
+@app.route('/')
 def get_debris():
     group = request.args.get('group', 'cosmos-1408-debris')
     url = f"https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=tle"

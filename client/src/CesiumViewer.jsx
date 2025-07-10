@@ -7,7 +7,8 @@ import {
   LabelStyle,
   VerticalOrigin,
   ScreenSpaceEventHandler,
-  ScreenSpaceEventType
+  ScreenSpaceEventType,
+  Cartographic
 } from "cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
@@ -49,7 +50,7 @@ function CesiumViewer({ tleGroup }) {
 
         // 현재 고도 계산
         const cartesian = entity.position.getValue(viewer.clock.currentTime);
-        const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+        const cartographic = Cartographic.fromCartesian(cartesian);
         const altitude = cartographic.height / 1000;
         const risk = "중간"; // 일단 고정
 

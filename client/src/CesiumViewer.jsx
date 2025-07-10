@@ -37,7 +37,7 @@ function CesiumViewer({ tleGroup }) {
       sceneModePicker: true,
     });
 
-    viewer.scene.globe.enableLighting = false; // ← 조명 비활성화 (전체 밝게)
+    viewer.scene.globe.enableLighting = false;
 
     viewerRefInstance.current = viewer;
 
@@ -48,21 +48,21 @@ function CesiumViewer({ tleGroup }) {
       if (picked && picked.id && picked.id.position) {
         const entity = picked.id;
 
-        // 현재 고도 계산
         const cartesian = entity.position.getValue(viewer.clock.currentTime);
         const cartographic = Cartographic.fromCartesian(cartesian);
         const altitude = cartographic.height / 1000;
-        const risk = "중간"; // 일단 고정
+        const velocity = entity.properties.velocity.getValue(viewer.clock.currentTime);
 
         try {
           const res = await fetch(
-            `https://thinkbasebackend.onrender.com/api/recommend?altitude=${altitude}&risk=${risk}`
+            `https://thinkbasebackend.onrender.com/api/recommend?altitude=${altitude}&risk=${risk}&velocity=${velocity}`
           );
           const data = await res.json();
 
           entity.description = `
             <h3>${entity.name}</h3>
             <p><strong>고도:</strong> ${altitude.toFixed(1)} km</p>
+            <p><strong>속도:</strong> ${velocity.toFixed(2)} km/s</p>
             <p><strong>추천 기술:</strong> ${data.recommended}</p>
             <p><strong>성공률:</strong> ${data.success_rate}%</p>
             <ul>
@@ -98,6 +98,9 @@ function CesiumViewer({ tleGroup }) {
           viewer.entities.add({
             name: sat.name,
             position: Cartesian3.fromDegrees(sat.lon, sat.lat, sat.alt * 1000),
+            properties: {
+              velocity: sat.velocity, // ✅ 속도 저장
+            },
             model: {
               uri: "/models/Meteor1.glb",
               scale: 500,
@@ -120,7 +123,6 @@ function CesiumViewer({ tleGroup }) {
           });
         });
 
-        // 카메라 초기 위치 고정 (지구 전체가 보이도록)
         viewer.camera.setView({
           destination: Cartesian3.fromDegrees(0, 0, 40000000),
         });

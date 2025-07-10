@@ -49,7 +49,8 @@ function CesiumViewer({ tleGroup }) {
 
         // 현재 고도 계산
         const cartesian = entity.position.getValue(viewer.clock.currentTime);
-        const altitude = cartesian.z / 1000; // m → km
+        const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+        const altitude = cartographic.height / 1000;
         const risk = "중간"; // 일단 고정
 
         try {

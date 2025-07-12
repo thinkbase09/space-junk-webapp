@@ -86,18 +86,31 @@ def recommend():
         elif velocity > 5:
             risk_score += 1
 
+        # Explanation
         reasons = []
         reasons.append(f"Altitude {altitude:.1f} km contributed to risk score.")
         reasons.append(f"Velocity {velocity:.2f} km/s contributed to risk score.")
         reasons.append(f"Final risk score: {risk_score} (higher score means higher risk).")
 
+        # Technology recommendation
+        if risk_score <= 2:
+            tech = "궤도 이탈 유도 (e.g., drag sail)"
+            success_rate = 90
+        elif risk_score <= 4:
+            tech = "능동 제거 (e.g., robotic arm, net capture)"
+            success_rate = 85
+        else:
+            tech = "고위험 제거 (e.g., laser ablation, harpoon)"
+            success_rate = 75
+
+        reasons.append(f"Recommended technology: {tech} (Estimated success rate: {success_rate}%)")
+
         return jsonify({
             'risk_score': risk_score,
+            'recommended': tech,
+            'success_rate': success_rate,
             'reasons': reasons
         })
+
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)

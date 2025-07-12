@@ -38,40 +38,43 @@ function CesiumViewer({ tleGroup }) {
 
     viewerRefInstance.current = viewer;
 
-    const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
-    handler.setInputAction(async (click) => {
-      const picked = viewer.scene.pick(click.position);
-      if (picked && picked.id && picked.id.position) {
-        const entity = picked.id;
+const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
+handler.setInputAction(async (click) => {
+  const picked = viewer.scene.pick(click.position);
+  if (picked && picked.id && picked.id.position) {
+    const entity = picked.id;
 
-        const cartesian = entity.position.getValue(viewer.clock.currentTime);
-        const cartographic = Cartographic.fromCartesian(cartesian);
-        const altitude = cartographic.height / 1000;
-        const velocity = entity.properties.velocity.getValue(viewer.clock.currentTime);
+    const cartesian = entity.position.getValue(viewer.clock.currentTime);
+    const cartographic = Cartographic.fromCartesian(cartesian);
+    const altitude = cartographic.height / 1000;
+    const velocity = entity.properties.velocity.getValue(viewer.clock.currentTime);
 
-        console.log("🛰️ altitude:", altitude);
-        console.log("🛰️ velocity:", velocity);
+    console.log("🛰️ altitude:", altitude);
+    console.log("🛰️ velocity:", velocity);
 
-        try {
-          const res = await fetch(
-            `https://thinkbasebackend.onrender.com/api/recommend?altitude=${altitude}&velocity=${velocity}`
-          );
-          const data = await res.json();
+    try {
+      const res = await fetch(
+        `https://thinkbasebackend.onrender.com/api/recommend?altitude=${altitude}&velocity=${velocity}`
+      );
+      const data = await res.json();
 
-          entity.description = `
-            <h3>${entity.name}</h3>
-            <p><strong>Altitude:</strong> ${altitude.toFixed(1)} km</p>
-            <p><strong>Velocity:</strong> ${velocity.toFixed(2)} km/s</p>
-            <p><strong>Risk Score:</strong> ${data.risk_score}</p>
-            <ul>
-              ${data.reasons.map((r) => `<li>${r}</li>`).join("")}
-            </ul>
-          `;
-        } catch (err) {
-          console.error("❌ Recommendation API failed:", err);
-        }
-      }
-    }, ScreenSpaceEventType.LEFT_CLICK);
+      entity.description = `
+        <h3>${entity.name}</h3>
+        <p><strong>Altitude:</strong> ${altitude.toFixed(1)} km</p>
+        <p><strong>Velocity:</strong> ${velocity.toFixed(2)} km/s</p>
+        <p><strong>Risk Score:</strong> ${data.risk_score}</p>
+        <p><strong>Recommended Tech:</strong> ${data.recommended}</p>
+        <p><strong>Success Rate:</strong> ${data.success_rate}%</p>
+        <ul>
+          ${data.reasons.map((r) => `<li>${r}</li>`).join("")}
+        </ul>
+      `;
+    } catch (err) {
+      console.error("❌ Recommendation API failed:", err);
+    }
+  }
+}, ScreenSpaceEventType.LEFT_CLICK);
+
   }, []);
 
   useEffect(() => {

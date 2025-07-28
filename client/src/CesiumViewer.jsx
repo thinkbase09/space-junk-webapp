@@ -67,7 +67,7 @@ function CesiumViewer({ tleGroup }) {
             <h3>${name}</h3>
             <p><strong>고도:</strong> ${altitude.toFixed(1)} km</p>
             <p><strong>속도:</strong> ${velocity.toFixed(2)} km/s</p>
-            <p><strong>추천 기술:</strong> ${data.recommended}</p>
+            <p><strong>추천 제거 기술:</strong> ${data.recommended}</p>
             <p><strong>성공률:</strong> ${data.success_rate}%</p>
             <ul>
               ${data.reasons.map((r) => `<li>${r}</li>`).join("")}

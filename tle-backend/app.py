@@ -91,7 +91,7 @@ def get_debris():
         result = []
         seen_ids = set()
 
-        for sat in sats[:50]:  # ✅ 최대 50개
+        for sat in sats[:100]:  # ✅ 최대 100개
             sat_id = sat.model.satnum
             if sat_id in seen_ids:
                 continue

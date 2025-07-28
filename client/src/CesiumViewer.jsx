@@ -4,7 +4,6 @@ import {
   Ion,
   Cartesian3,
   Color,
-  VerticalOrigin,
   ScreenSpaceEventHandler,
   ScreenSpaceEventType,
 } from "cesium";
@@ -27,7 +26,6 @@ function getColorByRisk(risk) {
 function CesiumViewer({ tleGroup }) {
   const viewerRef = useRef(null);
   const viewerRefInstance = useRef(null);
-  const satelliteDataRef = useRef({}); // 클릭 시 이름 찾기용
 
   useEffect(() => {
     if (!viewerRef.current || viewerRefInstance.current) return;
@@ -87,7 +85,6 @@ function CesiumViewer({ tleGroup }) {
 
     const viewer = viewerRefInstance.current;
     viewer.entities.removeAll();
-    satelliteDataRef.current = {};
 
     const url = `${process.env.REACT_APP_API_BASE_URL}/api/debris?group=${tleGroup}`;
 
@@ -100,19 +97,18 @@ function CesiumViewer({ tleGroup }) {
           if (added.has(sat.name)) return;
           added.add(sat.name);
 
-          const risk =
-            sat.alt < 600 ? 3 : sat.alt < 1000 ? 2 : sat.alt < 2000 ? 1 : 0;
           const vel = Number(sat.velocity);
+          let risk = 0;
+          if (sat.alt < 600) risk += 3;
+          else if (sat.alt < 1000) risk += 2;
+          else if (sat.alt < 2000) risk += 1;
+
           if (vel > 8) risk += 2;
           else if (vel > 5) risk += 1;
 
           viewer.entities.add({
             name: sat.name,
-            position: Cartesian3.fromDegrees(
-              sat.lon,
-              sat.lat,
-              sat.alt * 1000
-            ),
+            position: Cartesian3.fromDegrees(sat.lon, sat.lat, sat.alt * 1000),
             point: {
               pixelSize: 10,
               color: getColorByRisk(risk),

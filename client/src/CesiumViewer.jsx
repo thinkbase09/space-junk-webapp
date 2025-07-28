@@ -6,6 +6,7 @@ import {
   Color,
   ScreenSpaceEventHandler,
   ScreenSpaceEventType,
+  Cartographic, // 추가된 import
 } from "cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
@@ -50,7 +51,8 @@ function CesiumViewer({ tleGroup }) {
         const entity = picked.id;
 
         const cartesian = entity.position.getValue(viewer.clock.currentTime);
-        const altitude = cartesian.z / 1000;
+        const cartographic = Cartographic.fromCartesian(cartesian); // 고도 정확 계산
+        const altitude = cartographic.height / 1000;
 
         try {
           const res = await fetch(

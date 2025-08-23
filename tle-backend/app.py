@@ -39,7 +39,7 @@ def evaluate_risk(altitude, velocity):
     if risk_score <= 2:
         tech = "궤도 이탈 유도 (e.g., drag sail)"
         success_rate = 90
-    elif risk_score <= 4:
+    elif risk_score <= 3:
         tech = "능동 제거 (e.g., robotic arm, net capture)"
         success_rate = 85
     else:
